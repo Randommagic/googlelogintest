@@ -28,7 +28,7 @@ function Callback() {
 
     // API 요청
     // fetch("http://localhost:8000/auth/login/google/callback", {
-    fetch("https://test.randommagic.xyz/auth/login/google/callback", {
+    fetch("https://api.randommagic.xyz/auth/login/google/callback", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
