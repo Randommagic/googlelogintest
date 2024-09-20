@@ -4,51 +4,52 @@ import { useLocation } from "react-router-dom";
 function Callback() {
   const location = useLocation();
   const [queryParams, setQueryParams] = useState({});
-  const [tokenInfo, setTokenInfo] = useState(null); // 토큰 정보를 저장할 상태 추가
-  const [error, setError] = useState(null); // 에러 메시지 상태
+  const [tokenInfo, setTokenInfo] = useState(null);
+  const [error, setError] = useState(null);
 
+  // 쿼리 파라미터를 가져와 상태에 저장
   useEffect(() => {
-    // 현재 URL의 query parameter 가져오기
     const params = new URLSearchParams(location.search);
     const code = params.get("code");
     const scope = params.get("scope");
     const authuser = params.get("authuser");
     const prompt = params.get("prompt");
 
-    // query parameter를 상태로 저장
     setQueryParams({ code, scope, authuser, prompt });
+  }, [location.search]);
 
-    // console에 출력하여 확인
-    console.log("Code:", code);
-    console.log("Scope:", scope);
-    console.log("Auth User:", authuser);
-    console.log("Prompt:", prompt);
-
-    // code가 존재하면 백엔드로 요청 보내기
-    if (code) {
-      // 백엔드 API 호출
-      // fetch("https://localhost:8000/auth/login/google/callback", {
-      fetch("https://api.randommagic.xyz/auth/login/google/callback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code }), // code를 body에 넣어서 전송
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Failed to fetch token info");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          setTokenInfo(data); // 토큰 정보를 상태로 저장
-        })
-        .catch((err) => {
-          setError(err.message); // 에러 메시지 상태로 저장
-        });
+  // API 호출 버튼 클릭 핸들러
+  const handleApiRequest = () => {
+    const { code } = queryParams;
+    if (!code) {
+      setError("No code available to request token.");
+      return;
     }
-  }, [location]);
+
+    // API 요청
+    // fetch("http://localhost:8000/auth/login/google/callback", {
+    fetch("https://test.randommagic.xyz/auth/login/google/callback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch token info");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setTokenInfo(data); // 토큰 정보를 상태로 저장
+        setError(null); // 에러 상태 초기화
+      })
+      .catch((err) => {
+        setError(err.message); // 에러 메시지 상태로 저장
+        setTokenInfo(null); // 토큰 정보 초기화
+      });
+  };
 
   return (
     <div className="callback">
@@ -69,6 +70,10 @@ function Callback() {
         </li>
       </ul>
 
+      <button onClick={handleApiRequest} className="api-request-button">
+        서버로 JWT 토큰 요청
+      </button>
+
       {tokenInfo ? (
         <div>
           <h2>Token Information</h2>
@@ -86,7 +91,7 @@ function Callback() {
           <p>토큰 정보를 가져오는데 실패했습니다: {error}</p>
         </div>
       ) : (
-        <p>토큰 정보를 가져오는 중...</p>
+        <p>토큰 정보를 가져오려면 위의 버튼을 클릭하세요.</p>
       )}
     </div>
   );
